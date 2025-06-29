@@ -6,6 +6,7 @@ import typing
 import collections.abc
 import itertools
 import json
+import copy
 
 class Factory:
   """
@@ -16,8 +17,8 @@ class Factory:
 
   def __init__(self,
                final_products: set["Item"],
-               items: set["Item"],
-               recipes: set["Recipe"]) -> "Factory":
+               items: dict[str, "Item"],
+               recipes: dict[str, "Recipe"]) -> "Factory":
     """
     Create a new Factory.
     """
@@ -27,10 +28,10 @@ class Factory:
     self._recipes = recipes
 
     self._recipes_by_item: dict["Item", "Recipe"] = dict()
-    for recipe in self._recipes:
+    for recipe in self._recipes.values():
       for output_item in recipe.get_output_items():
         if output_item not in self._recipes_by_item.keys():
-          self._recipes_by_item[output_item] = set()
+          self._recipes_by_item[output_item] = recipe
         else:
           raise Exception("Factory cannot have multiple recipes for one item.")
 
@@ -51,7 +52,7 @@ class Factory:
     recipe_dicts = json_dict["recipes"]
     recipes: dict[str, "Recipe"] = dict()
     for recipe_dict in recipe_dicts:
-      recipe = Recipe.from_dict(recipe_dict)
+      recipe = Recipe.from_dict(recipe_dict, items)
       recipes[recipe.get_recipe_id()] = recipe
 
     final_product_ids = json_dict["final_products"]
@@ -61,7 +62,10 @@ class Factory:
 
     return Factory(final_products, items, recipes)
   
-  def get_total_recipe(self, item: str, recipe_id: str, recipe_name: str) -> "Recipe":
+  def get_item_by_id(self, item_id: str) -> "Item":
+    return self._items[item_id]
+  
+  def get_total_recipe(self, item: "Item", recipe_id: str, recipe_name: str) -> "Recipe":
     """
     Get a recipe representing the total material cost of producing a given
     item. The recipe is created with the given recipe id and name.
@@ -74,11 +78,14 @@ class Factory:
     changed = True
     while changed:
       changed = False
+      new_recipe = recipe.clone()
       for input_item in recipe.get_input_items():
         if self._includes_recipe_for_item(input_item):
           sub_recipe = self._get_recipe_for_item(input_item)
-          self._expand_recipe(recipe, sub_recipe)
+          self._expand_recipe(new_recipe, sub_recipe, input_item)
           changed = True
+
+      recipe = new_recipe
 
     return recipe
 
@@ -152,6 +159,12 @@ class Item:
       return False
     return self.get_item_id() == other.get_item_id()
   
+  def __str__(self) -> str:
+    return self.get_item_name()
+  
+  def __repr__(self) -> str:
+    return self.get_item_id()
+  
   def get_item_id(self) -> str:
     return self._item_id
   
@@ -185,6 +198,19 @@ class Recipe:
 
     self._inputs = inputs
     self._outputs = outputs
+
+  def __str__(self) -> str:
+    s = f"{self.get_recipe_name()}\n"
+    s += "Inputs:\n"
+    for input_item in self.get_input_items():
+      s += f"\t{input_item}:\t{self.get_input_quantity(input_item)}\n"
+    s += "Outputs:\n"
+    for output_item in self.get_output_items():
+      s += f"\t{output_item}:\t{self.get_output_quantity(output_item)}\n"
+    return s
+
+  def __repr__(self) -> str:
+    return f"{self.get_recipe_id()}: {repr(self._inputs)} -> {repr(self._outputs)}"
 
   @staticmethod
   def create_empty(recipe_id: str, recipe_name: str):
@@ -221,6 +247,14 @@ class Recipe:
       recipe.set_output_quantity(output_item, output_quantity)
 
     return recipe
+  
+  def clone(self) -> "Recipe":
+    return Recipe(
+      self.get_recipe_id() + "(clone)",
+      self.get_recipe_name(),
+      dict(self._inputs),
+      dict(self._outputs)  
+    )
   
   def __hash__(self) -> int:
     return hash(self.get_recipe_id())
@@ -318,6 +352,14 @@ class Recipe:
     Adds a quantity to the input quantity of an item.
     """
     self.set_output_quantity(item, self.get_output_quantity(item) + quantity)
+
+def main():
+  
+  with open("simple.json") as json_file:
+    factory = Factory.from_json_file(json_file)
+    circuit1 = factory.get_item_by_id("research_final")
+    total_recipe = factory.get_total_recipe(circuit1, "total", "Total Recipe")
+    print(total_recipe)
 
 if __name__ == "__main__":
   main()
