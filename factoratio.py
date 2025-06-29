@@ -53,25 +53,11 @@ class Factory:
 
     return Factory(final_products, items, recipes)
   
-  def get_raw_cost(self, item_id: str) -> set["RecipeLine"]:
+  def get_total_recipe(self, item_id: str) -> set["RecipeLine"]:
     """
     Get the raw cost of the item with the given id in terms of raw materials
     (items which do not have recipes).
     """
-
-    if not self._is_recipe_with_output(item_id):
-      return {
-        RecipeLine()
-      }
-
-    raw_cost: set[RecipeLine] = set()
-
-    # Find the recipe used to craft the item
-    recipe = self._get_recipe_with_output(item_id)
-
-    divider = recipe.get_output_quantity(item_id)
-    for input_id in recipe.
-
 
   def _get_recipe_with_output(self, item_id: str) -> "Recipe":
     """
@@ -158,6 +144,13 @@ class Recipe:
 
     self._inputs = inputs
     self._outputs = outputs
+
+  @staticmethod
+  def create_empty(recipe_id: str, recipe_name: str):
+    """
+    Create a new empty Recipe.
+    """
+    return Recipe(recipe_id, recipe_name, dict(), dict())
 
   @staticmethod
   def from_dict(recipe_dict: dict[str, typing.Any], items: dict[str, "Item"]) -> "Recipe":
@@ -255,6 +248,56 @@ class Recipe:
     Returns whether an item is an output of the recipe.
     """
     return item in self.get_input_items()
+  
+  def add_input(self, item: "Item", quantity: float) -> None:
+    """
+    Adds an input to the recipe. If the input item is already in the recipe,
+    raises an exception.
+    """
+    if self.is_input(item):
+      raise Exception(f"Item {item} is already an input of recipe {self}.")
+    
+    self._inputs[item] = quantity
+
+  def add_output(self, item: "Item", quantity: float) -> None:
+    """
+    Adds an output to the recipe. If the output item is already in the recipe,
+    raises an exception.
+    """
+    if self.is_output(item):
+      raise Exception(f"Item {item} is already an output of recipe {self}.")
+    
+    self._outputs[item] = quantity
+
+  def set_input_quantity(self, item: "Item", quantity: float) -> None:
+    """
+    Sets the quantity of an input item. If the item is not an input of the
+    recipe, adds it.
+    """
+    if not self.is_input(item):
+      self.add_input(item)
+    self._inputs[item] = quantity
+
+  def set_output_quantity(self, item: "Item", quantity: float) -> None:
+    """
+    Sets the quantity of an output item. If the item is not an output of the
+    recipe, adds it.
+    """
+    if not self.is_output(item):
+      self.add_output(item)
+    self._inputs[item] = quantity
+
+  def add_input_quantity(self, item: "Item", quantity: float) -> None:
+    """
+    Adds a quantity to the input quantity of an item.
+    """
+    self.set_input_quantity(item, self.get_input_quantity(item) + quantity)
+
+  def add_output_quantity(self, item: "Item", quantity: float) -> None:
+    """
+    Adds a quantity to the input quantity of an item.
+    """
+    self.set_output_quantity(item, self.get_output_quantity(item) + quantity)
 
 if __name__ == "__main__":
   main()
