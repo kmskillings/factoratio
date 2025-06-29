@@ -167,32 +167,23 @@ class Recipe:
     recipe_id = recipe_dict["recipe_id"]
     recipe_name = recipe_dict["recipe_name"]
 
-    inputs: dict["Item", float] = dict()
+    recipe = Recipe.create_empty(recipe_id, recipe_name)
+
     input_dicts = recipe_dict["inputs"]
     for input_dict in input_dicts:
       input_id = input_dict["item"]
       input_item = items[input_id]
       input_quantity = float(input_dict["quantity"])
-      if input_id in inputs.keys():
-        raise Exception(f"Input item {input_item} appears multiple times in recipe with id {recipe_id}.")
-      inputs[input_item] = input_quantity
+      recipe.set_input_quantity(input_item, input_quantity)
 
-    outputs: dict["Item", float] = dict()
     output_dicts = recipe_dict["outputs"]
     for output_dict in output_dicts:
       output_id = output_dict["item"]
       output_item = items[output_id]
       output_quantity = float(output_dict["quantity"])
-      if output_id in outputs.keys():
-        raise Exception(f"Output item {output_item} appears multiple times in recipe with id {recipe_id}.")
-      outputs[output_item] = output_quantity
+      recipe.set_output_quantity(output_item, output_quantity)
 
-    return Recipe(
-      recipe_id,
-      recipe_name,
-      inputs,
-      outputs
-    )
+    return recipe
   
   def __hash__(self) -> int:
     return hash(self.get_recipe_id())
