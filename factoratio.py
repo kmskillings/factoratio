@@ -250,10 +250,9 @@ class Recipe:
     recipe, adds it.
     """
 
-    if self.is_input(item):
-      raise Exception(f"Item {item} is already an input of recipe {self}.")
-
     if quantity == 0:
+      if self.is_input(item):
+        self._inputs.pop(item)
       return
       
     self._inputs[item] = quantity
@@ -263,9 +262,7 @@ class Recipe:
     Sets the quantity of an output item. If the item is not an output of the
     recipe, adds it.
     """
-    if self.is_output(item):
-      raise Exception(f"Item {item} is already an output of recipe {self}.")
-
+  
     if quantity == 0:
       return
       
