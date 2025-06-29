@@ -264,6 +264,8 @@ class Recipe:
     """
   
     if quantity == 0:
+      if self.is_output(item):
+        self._outputs.pop(item)
       return
       
     self._outputs[item] = quantity
