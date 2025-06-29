@@ -1,0 +1,83 @@
+{
+  "final_products": [
+    "circuit1"
+  ],
+  "recipes": [
+    {
+      "recipe_id": "gear",
+      "recipe_name": "Iron Gear Wheel",
+      "outputs": [
+        {
+          "item": "gear",
+          "quantity": 1
+        }
+      ],
+      "inputs": [
+        {
+          "item": "iron",
+          "quantity": 2
+        }
+      ],
+      "time": 0.5
+    },
+    {
+      "recipe_id": "cable",
+      "recipe_name": "Copper Cable",
+      "outputs": [
+        {
+          "item": "cable",
+          "quantity": 2
+        }
+      ],
+      "inputs": [
+        {
+          "item": "copper",
+          "quantity": 1
+        }
+      ],
+      "time": 0.5
+    },
+    {
+      "recipe_id": "circuit1",
+      "recipe_name": "Electronic Circuit",
+      "outputs": [
+        {
+          "item": "circuit1",
+          "quantity": 1
+        }
+      ],
+      "inputs": [
+        {
+          "item": "cable",
+          "quantity": 3
+        },
+        {
+          "item": "iron",
+          "quantity": 1
+        }
+      ]
+    }
+  ],
+  "items": [
+    {
+      "item_id": "iron",
+      "item_name": "Iron Plate"
+    },
+    {
+      "item_id": "copper",
+      "item_name": "Copper Plate"
+    },
+    {
+      "item_id": "gear",
+      "item_name": "Iron Gear Wheel"
+    },
+    {
+      "item_id": "cable",
+      "item_name": "Copper Cable"
+    },
+    {
+      "item_id": "circuit1",
+      "item_name": "Electronic Circuit"
+    }
+  ]
+}
