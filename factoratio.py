@@ -256,39 +256,5 @@ class Recipe:
     """
     return item in self.get_input_items()
 
-class RecipeLine:
-  """
-  Represents a single "line" of a recipe, or an input or output Item together
-  with a Quantity.
-  """
-
-  def __init__(self, item: Item, quantity: float) -> "RecipeLine":
-    """
-    Create a new RecipeLine with the given Item and quantity.
-    """
-
-    self._item = item
-    self._quantity = float(quantity)
-
-  @staticmethod
-  def from_dict(line_dict: dict[str, typing.Any]) -> "RecipeLine":
-    """
-    Create a new RecipeLine from the parameters in the given dict.
-    """
-
-    return RecipeLine(line_dict["item"], line_dict["quantity"])
-
-  def get_item(self) -> Item:
-    return self._item
-  
-  def get_quantity(self) -> float:
-    return self._quantity
-  
-def main():
-  
-  with open("simple.json", "r") as json_file:
-    factory = Factory.from_json_file(json_file)
-    print("Done!")
-
 if __name__ == "__main__":
   main()
