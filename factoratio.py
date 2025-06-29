@@ -142,8 +142,8 @@ class Recipe:
   def __init__(self,
                recipe_id: str,
                recipe_name: str,
-               inputs: typing.Iterable["RecipeLine"], 
-               outputs: typing.Iterable["RecipeLine"]) -> "Recipe":
+               inputs: dict["Item", float],
+               outputs: dict["Item", float]):
     """
     Create a new Recipe from the given sets of input RecipeLines and output
     RecipeLines.
@@ -151,34 +151,48 @@ class Recipe:
 
     if recipe_id in Recipe._used_recipe_ids:
       raise Exception(f"A recipe with id {recipe_id} has already been created.")
+    Recipe._used_recipe_ids.add(recipe_id)
 
     self._recipe_id = recipe_id
     self._recipe_name = recipe_name
 
-    self._inputs: dict[str, "RecipeLine"] = Recipe._build_dict(inputs)
-    self._outputs: dict[str, "RecipeLine"] = Recipe._build_dict(outputs)
-
-    Recipe._used_recipe_ids.add(recipe_id)
+    self._inputs = inputs
+    self._outputs = outputs
 
   @staticmethod
-  def from_dict(recipe_dict: dict[str, typing.Any]) -> "Recipe":
+  def from_dict(recipe_dict: dict[str, typing.Any], items: dict[str, "Item"]) -> "Recipe":
     """
-    Create a new Recipe from the parameters in the given dict.
+    Create a new Recipe from the parameters in the given dict. A dictionary of
+    items is also required, with the keys as the item_ids and the values as the
+    items.
     """
 
+    recipe_id = recipe_dict["recipe_id"]
+    recipe_name = recipe_dict["recipe_name"]
+
+    inputs: dict["Item", float] = dict()
     input_dicts = recipe_dict["inputs"]
-    inputs: set["RecipeLine"] = set()
     for input_dict in input_dicts:
-      inputs.add(RecipeLine.from_dict(input_dict))
+      input_id = input_dict["item"]
+      input_item = items[input_id]
+      input_quantity = float(input_dict["quantity"])
+      if input_id in inputs.keys():
+        raise Exception(f"Input item {input_item} appears multiple times in recipe with id {recipe_id}.")
+      inputs[input_item] = input_quantity
 
+    outputs: dict["Item", float] = dict()
     output_dicts = recipe_dict["outputs"]
-    outputs: set["RecipeLine"] = set()
     for output_dict in output_dicts:
-      outputs.add(RecipeLine.from_dict(output_dict))
+      output_id = output_dict["item"]
+      output_item = items[output_id]
+      output_quantity = float(output_dict["quantity"])
+      if output_id in outputs.keys():
+        raise Exception(f"Output item {output_item} appears multiple times in recipe with id {recipe_id}.")
+      outputs[output_item] = output_quantity
 
     return Recipe(
-      recipe_dict["recipe_id"],
-      recipe_dict["recipe_name"],
+      recipe_id,
+      recipe_name,
       inputs,
       outputs
     )
@@ -190,6 +204,9 @@ class Recipe:
     if not isinstance(other, Recipe):
       return False
     return self.get_recipe_id() == other.get_recipe_id()
+  
+  def __ne__(self, other) -> bool:
+    return not self.__eq__(self, other)
 
   def get_recipe_id(self) -> str:
     return self._recipe_id
@@ -197,78 +214,47 @@ class Recipe:
   def get_recipe_name(self) -> str:
     return self._recipe_name
 
-  def get_inputs(self) -> set["RecipeLine"]:
+  def get_input_items(self) -> typing.Iterable["Item"]:
     """
-    Get the inputs of the Recipe.
+    Get an iterable of all items this recipe uses as inputs.
     """
-    return self._inputs
+    return self._inputs.keys()
 
-  def get_outputs(self) -> set["RecipeLine"]:
+  def get_output_items(self) -> typing.Iterable["Item"]:
     """
-    Get the outputs of the Recipe.
+    Get an iterable of all items this recipe produces as outputs.
     """
-    return self._outputs
-  
-  def is_output(self, item_id: str) -> bool:
-    """
-    Gets whether the given item id is among the outputs of the recipe.
-    """
-    return item_id in self._outputs.keys()
-  
-  def is_input(self, item_id: str) -> bool:
-    """
-    Gets whether the given item_id is among the inputs of the recipe.
-    """
-    return item_id in self._inputs.keys()
-  
-  def get_output_quantity(self, item_id: str) -> float:
-    """
-    Gets the quantity of the given item that the recipe outputs.
-    """
-    if self.is_output(item_id):
-      return self._get_output_line(item_id).get_quantity()
-    return 0
+    return self._outputs.keys()
 
-  def get_input_quantity(self, item_id: str) -> float:
+  def get_input_quantity(self, item: "Item") -> float:
     """
-    Gets the quantity of the given item that the recipe inputs.
+    Get the quantity of an item that the recipe consumes as an input. If the
+    item is not an input of the recipe, returns zero.
     """
-    if self.is_input(item_id):
-      return self._get_input_line(item_id).get_quantity()
-    return 0
+    if not self.is_input(item):
+      return 0
+    return self._inputs[item]
 
-  def _get_input_line(self, item_id: str) -> "RecipeLine":
+  def get_output_quantity(self, item: "Item") -> float:
     """
-    Gets the input line corresponding to the given item_id. Throws an exception
-    if there is no such line.
+    Get the quantity of an item that the recipe produces as an output. If the
+    item is not an output of the recipe, returns zero.
     """
-    if self.is_input(item_id):
-      return self._inputs[item_id]
-    raise Exception(f"Recipe does not include {item_id} as an input.")
+    if not self.is_output(item):
+      return 0
+    return self._outputs[item]
 
-  def _get_output_line(self, item_id: str) -> "RecipeLine":
+  def is_output(self, item: "Item") -> bool:
     """
-    Gets the output line corresponding to the given item_id. Throws an exception
-    if there is no such line.
+    Returns whether an item is an input of the recipe.
     """
-    if self.is_output(item_id):
-      return self._outputs[item_id]
-    raise Exception(f"Recipe does not include {item_id} as an output.")
+    return item in self.get_output_items()
 
-  @staticmethod
-  def _build_dict(lines: typing.Iterable["RecipeLine"]) -> dict[str, "RecipeLine"]:
+  def is_input(self, item: "Item") -> bool:
     """
-    Builds a dictionary from the given iterable of RecipeLines, with the
-    item_id as the key and the RecipeLine as the value.
+    Returns whether an item is an output of the recipe.
     """
-    line_dict: dict[str, "RecipeLine"] = dict()
-    for line in lines:
-      item_id = line.get_item().get_item_id()
-      if item_id in line_dict.keys():
-        raise Exception(f"Recipe cannot have more than one input or output line representing the same item: {item_id}.")
-      line_dict[item_id] = line
-
-    return line_dict
+    return item in self.get_input_items()
 
 class RecipeLine:
   """
