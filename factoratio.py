@@ -26,6 +26,14 @@ class Factory:
     self._items = items
     self._recipes = recipes
 
+    self._recipes_by_item: dict["Item", "Recipe"] = dict()
+    for recipe in self._recipes:
+      for output_item in recipe.get_output_items():
+        if output_item not in self._recipes_by_item.keys():
+          self._recipes_by_item[output_item] = set()
+        else:
+          raise Exception("Factory cannot have multiple recipes for one item.")
+
   @staticmethod
   def from_json_file(json_file: typing.TextIO) -> "Factory":
     """
@@ -53,29 +61,58 @@ class Factory:
 
     return Factory(final_products, items, recipes)
   
-  def get_total_recipe(self, item_id: str, recipe_id: str, recipe_name: str) -> "Recipe":
+  def get_total_recipe(self, item: str, recipe_id: str, recipe_name: str) -> "Recipe":
     """
     Get a recipe representing the total material cost of producing a given
     item. The recipe is created with the given recipe id and name.
     """
 
     recipe = Recipe.create_empty(recipe_id, recipe_name)
+    recipe.set_input_quantity(item, 1)
+    recipe.set_output_quantity(item, 1)
 
+    changed = True
+    while changed:
+      changed = False
+      for input_item in recipe.get_input_items():
+        if self._includes_recipe_for_item(input_item):
+          sub_recipe = self._get_recipe_for_item(input_item)
+          self._expand_recipe(recipe, sub_recipe)
+          changed = True
 
+    return recipe
 
-  def _get_recipe_with_output(self, item_id: str) -> "Recipe":
+  def _expand_recipe(self, main_recipe: "Recipe", sub_recipe: "Recipe", main_item: "Item"):
+    """
+    "Expand" a recipe by substituting the sub-recipe in for the appropriate
+    inputs and outputs.
+    """
+    sub_output = sub_recipe.get_output_quantity(main_item)
+    main_input = main_recipe.get_input_quantity(main_item)
+    scale_factor = main_input / sub_output
+
+    for output_item in sub_recipe.get_output_items():
+      main_recipe.add_input_quantity(output_item, -sub_recipe.get_output_quantity(output_item) * scale_factor)
+
+    for input_item in sub_recipe.get_input_items():
+      main_recipe.add_input_quantity(input_item, sub_recipe.get_input_quantity(input_item) * scale_factor)
+
+    return
+
+  def _includes_recipe_for_item(self, item: "Item") -> bool:
+    """
+    Gets whether the factory has a recipe for the given item.
+    """
+    return item in self._recipes_by_item.keys()
+
+  def _get_recipe_for_item(self, item: "Item") -> "Recipe":
     """
     Gets the recipe with the given output. If there are multiple such recipes,
     throws an exception.
     """
-
-    recipes_with_output = set(filter(self._recipes, lambda r: r.is_output(item_id)))
-    if len(recipes_with_output) == 1:
-      recipe_with_output = recipes_with_output.pop()
-      return recipes_with_output
-    
-    raise Exception(f"There is no recipe with an output of {item_id}.")
-
+    if not self._includes_recipe_for_item(item):
+      raise Exception(f"Factory has no recipe for item {item}.")
+    return self._recipes_by_item[item]
 
 class Item:
   """
