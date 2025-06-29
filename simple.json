@@ -72,12 +72,160 @@
       "item_name": "Iron Gear Wheel"
     },
     {
+      "item_id": "stick",
+      "item_name": "Iron Stick"
+    },
+    {
+      "item_id": "acid",
+      "item_name": "Sulfuric Acid"
+    },
+    {
+      "item_id": "oil_heavy",
+      "item_name": "Heavy Oil"
+    },
+    {
+      "item_id": "oil_light",
+      "item_name": "Light Oil"
+    },
+    {
+      "item_id": "oil_gas",
+      "item_name": "Petroleum Gas"
+    },
+    {
+      "item_id": "water",
+      "item_name": "Water"
+    },
+    {
+      "item_id": "lube",
+      "item_name": "Lubricant"
+    },
+    {
+      "item_id": "fuel",
+      "item_name": "Solid Fuel"
+    },
+    {
+      "item_id": "plastic",
+      "item_name": "Plastic Bar"
+    },
+    {
+      "item_id": "coal",
+      "item_name": "Coal"
+    },
+    {
+      "item_id": "battery",
+      "item_name": "Battery"
+    },
+    {
+      "item_id": "motor",
+      "item_name": "Electric Engine Unit"
+    },
+    {
+      "item_id": "steel",
+      "item_name": "Steel Plate"
+    },
+    {
+      "item_id": "bot",
+      "item_name": "Flying Robot Frame"
+    },
+    {
       "item_id": "cable",
       "item_name": "Copper Cable"
     },
     {
       "item_id": "circuit1",
       "item_name": "Electronic Circuit"
+    },
+    {
+      "item_id": "radar",
+      "item_name": "Radar"
+    },
+    {
+      "item_id": "accumulator",
+      "item_name": "Accumulator"
+    },
+    {
+      "item_id": "panel",
+      "item_name": "Solar Panel"
+    },
+    {
+      "item_id": "arm1",
+      "item_name": "Inserter"
+    },
+    {
+      "item_id": "belt1",
+      "item_name": "Transport Belt"
+    },
+    {
+      "item_id": "sulfur",
+      "item_name": "Sulfur"
+    },
+    {
+      "item_id": "circuit2",
+      "item_name": "Advanced Circuit"
+    },
+    {
+      "item_id": "engine",
+      "item_name": "Engine Unit"
+    },
+    {
+      "item_id": "furnace3",
+      "item_name": "Electric Furnace"
+    },
+    {
+      "item_id": "rail",
+      "item_name": "Rail"
+    },
+    {
+      "item_id": "prod1",
+      "item_name": "Productivity Module"
+    },
+    {
+      "item_id": "circuit3",
+      "item_name": "Processing Unit"
+    },
+    {
+      "item_id": "lds",
+      "item_name": "Low Density Structure"
+    },
+    {
+      "item_id": "rocket_fuel",
+      "item_name": "Rocket Fuel"
+    },
+    {
+      "item_id": "satellite",
+      "item_name": "Satellite"
+    },
+    {
+      "item_id": "rocket",
+      "item_name": "Rocket Part"
+    },
+    {
+      "item_id": "potion1",
+      "item_name": "Automation Science Pack"
+    },
+    {
+      "item_id": "potion2",
+      "item_name": "Logistic Science Pack"
+    },
+    {
+      "item_id": "potion3",
+      "item_name": "Chemical Science Pack"
+    },
+    {
+      "item_id": "potion4",
+      "item_name": "Production Science Pack"
+    },
+    {
+      "item_id": "potion5",
+      "item_name": "Utility Science Pack"
+    },
+    {
+      "item_id": "potion6",
+      "item_name": "Space Science Pack"
+    },
+    {
+      "item_id": "research_final",
+      "item_name": "Infinite Research"
     }
   ]
 }
